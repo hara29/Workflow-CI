@@ -21,7 +21,6 @@ X_train = pd.read_csv("bank_preprocessing/X_train.csv")
 y_train = pd.read_csv("bank_preprocessing/y_train.csv").values.ravel()
 X_test = pd.read_csv("bank_preprocessing/X_test.csv")
 y_test = pd.read_csv("bank_preprocessing/y_test.csv").values.ravel()
-input_example = X_train[0:5]
 
 with mlflow.start_run():
     # Parameter grid
@@ -47,7 +46,7 @@ with mlflow.start_run():
     mlflow.log_metric("f1_score", f1_score(y_test, y_pred))
 
     # Simpan model dengan signature input
-    mlflow.sklearn.log_model(best_model, "model", input_example=input_example)
+    mlflow.sklearn.log_model(best_model, "model")
 
     # Log confusion matrix plot
     cm = confusion_matrix(y_test, y_pred)
