@@ -37,9 +37,10 @@ jobs:
       - name: Set MLflow Tracking URI
         run: echo "MLFLOW_TRACKING_URI=https://dagshub.com/<username>/<repo>.mlflow" >> $GITHUB_ENV
 
-      - name: Run MLflow project
-        working-directory: MLProject
-        run: mlflow run . --env-manager=local --entry-point main
+      - name: Run MLflow Project
+        shell: bash -l {0}
+        run: |
+          mlflow run MLProject --experiment-name "RandomForest_ManualLogging" --env-manager=local
 
       - name: Get latest MLflow run_id
         run: |
