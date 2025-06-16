@@ -13,20 +13,35 @@ jobs:
     env:
       MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
       MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
         with:
-          activate-environment: mlflow-env
-          environment-file: MLProject/conda.yaml
-          auto-activate-base: false
+          python-version: '3.12.7'
 
-      - name: Install dependencies via pip (fallback)
-        run: pip install pandas numpy matplotlib seaborn scikit-learn mlflow
+      - name: Check Env
+        run: |
+          python --version
+          pip --version
 
-      - name: Run training script
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas numpy matplotlib seaborn scikit-learn mlflow dagshub joblib
+
+      - name: Set MLflow Tracking URI
+        run: echo "MLFLOW_TRACKING_URI=https://dagshub.com/<username>/<repo>.mlflow" >> $GITHUB_ENV
+
+      - name: Run mlflow project
         working-directory: MLProject
         run: python modelling_tuning.py
+
+      - name: Install Python dependencies
+        run: echo "Dependencies installed earlier with pip"
+
+      - name: Upload to Google Drive
+        run: echo "Simulasi upload ke Google Drive - placeholder"

@@ -1,13 +1,16 @@
 import os
+import json
 import pandas as pd
 import mlflow
-import mlflow.sklearn
+import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
+from mlflow.models.signature import infer_signature
 from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 import tempfile
+import dagshub
 
 # === Konfigurasi DagsHub MLflow ===
 os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
@@ -34,31 +37,83 @@ with mlflow.start_run():
     grid_search.fit(X_train, y_train)
 
     best_model = grid_search.best_estimator_
+    best_params = grid_search.best_params_
+    best_score = grid_search.best_score_
 
     # Predict
     y_pred = best_model.predict(X_test)
 
     # Manual logging
-    mlflow.log_params(grid_search.best_params_)
-    mlflow.log_metric("accuracy", accuracy_score(y_test, y_pred))
-    mlflow.log_metric("precision", precision_score(y_test, y_pred))
-    mlflow.log_metric("recall", recall_score(y_test, y_pred))
-    mlflow.log_metric("f1_score", f1_score(y_test, y_pred))
+    mlflow.log_params(best_params)
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+
+    mlflow.log_metric("accuracy", accuracy)
+    mlflow.log_metric("precision", precision)
+    mlflow.log_metric("recall", recall)
+    mlflow.log_metric("f1_score", f1)
 
     # Simpan model dengan signature input
-    mlflow.sklearn.log_model(best_model, "model", input_example=input_example)
+    signature = infer_signature(X_test, y_pred)
+    mlflow.sklearn.log_model(best_model, "model", input_example=input_example, signature=signature)
 
-    # Log confusion matrix plot
+    # Simpan confusion matrix plot
     cm = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(6, 4))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
     plt.title("Confusion Matrix")
+    plt.tight_layout()
+    cm_plot_path = "training_confusion_matrix.png"
+    plt.savefig(cm_plot_path)
 
-    with tempfile.NamedTemporaryFile(suffix="_cm.png", delete=False) as tmpfile:
-        plt.savefig(tmpfile.name)
-        mlflow.log_artifact(tmpfile.name, artifact_path="plots")
+    # Simpan metric_info.json
+    metric_info = {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1_score": f1
+    }
+    with open("metric_info.json", "w") as f:
+        json.dump(metric_info, f, indent=2)
+
+    # Simpan estimator.html (dummy HTML deskripsi model)
+    with open("estimator.html", "w") as f:
+        f.write(f"""
+        <html>
+        <head><title>Estimator Summary</title></head>
+        <body>
+        <h2>Best Estimator</h2>
+        <pre>{best_model}</pre>
+
+        <h3>Best Parameters</h3>
+        <ul>
+            <li>n_estimators: {best_params.get('n_estimators')}</li>
+            <li>max_depth: {best_params.get('max_depth')}</li>
+            <li>min_samples_split: {best_params.get('min_samples_split')}</li>
+        </ul>
+
+        <h3>Best Cross-Validation Score (F1)</h3>
+        <p>{best_score:.4f}</p>
+
+        <h3>Grid Search Config</h3>
+        <ul>
+            <li>cv: 3-fold</li>
+            <li>scoring: f1</li>
+            <li>random_state: 42</li>
+        </ul>
+        </body>
+        </html>
+        """)
+
+    # Log semua file sebagai artefak
+    mlflow.log_artifact(cm_plot_path)
+    mlflow.log_artifact("metric_info.json")
+    mlflow.log_artifact("estimator.html")
 
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
+
