@@ -1,0 +1,30 @@
+name: CI MLflow Training
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'MLProject/**'
+      - '.github/workflows/ci_training.yml'
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: bank_attrition_env
+          environment-file: MLProject/conda.yaml
+          auto-activate-base: false
+
+      - name: Install MLflow CLI
+        run: pip install mlflow
+
+      - name: Run MLflow project
+        working-directory: MLProject
+        run: mlflow run . --no-conda
