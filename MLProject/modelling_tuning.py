@@ -10,8 +10,10 @@ import seaborn as sns
 import tempfile
 import dagshub
 
-# === Konfigurasi DagsHub MLflow dengan default access token ===
-dagshub.init(repo_owner='hara29', repo_name='bank-attrition-modelling', mlflow=True)
+# === Konfigurasi DagsHub MLflow ===
+os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
+os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("MLFLOW_TRACKING_PASSWORD")
+mlflow.set_tracking_uri("https://dagshub.com/hara29/bank-attrition-modelling.mlflow")
 mlflow.set_experiment("RandomForest_ManualLogging")
 
 # Load data
