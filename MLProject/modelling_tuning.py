@@ -10,7 +10,6 @@ from sklearn.metrics import classification_report, accuracy_score, precision_sco
 import matplotlib.pyplot as plt
 import seaborn as sns
 import tempfile
-import dagshub
 
 # === Konfigurasi DagsHub MLflow ===
 os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
