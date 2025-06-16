@@ -22,8 +22,8 @@ jobs:
           environment-file: MLProject/conda.yaml
           auto-activate-base: false
 
-      - name: Install MLflow CLI
-        run: pip install mlflow
+      - name: Install dependencies via pip (fallback)
+        run: pip install pandas numpy matplotlib seaborn scikit-learn mlflow dagshub
 
       - name: Run training script
         working-directory: MLProject
