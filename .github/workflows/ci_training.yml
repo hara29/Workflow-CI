@@ -18,13 +18,13 @@ jobs:
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: bank_attrition_env
+          activate-environment: mlflow-env
           environment-file: MLProject/conda.yaml
           auto-activate-base: false
 
       - name: Install MLflow CLI
         run: pip install mlflow
 
-      - name: Run MLflow project
+      - name: Run training script
         working-directory: MLProject
-        run: mlflow run . --no-conda
+        run: python modelling_tuning.py
