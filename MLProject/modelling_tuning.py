@@ -5,7 +5,6 @@ import mlflow
 import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-from mlflow.models.signature import infer_signature
 from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -23,7 +22,6 @@ X_train = pd.read_csv("bank_preprocessing/X_train.csv")
 y_train = pd.read_csv("bank_preprocessing/y_train.csv").values.ravel()
 X_test = pd.read_csv("bank_preprocessing/X_test.csv")
 y_test = pd.read_csv("bank_preprocessing/y_test.csv").values.ravel()
-input_example = X_train[0:5]
 
 with mlflow.start_run():
     # Parameter grid
@@ -55,9 +53,8 @@ with mlflow.start_run():
     mlflow.log_metric("recall", recall)
     mlflow.log_metric("f1_score", f1)
 
-    # Simpan model dengan signature input
-    signature = infer_signature(X_test, y_pred)
-    mlflow.sklearn.log_model(best_model, "model", input_example=input_example, signature=signature)
+    # Simpan model 
+    mlflow.sklearn.log_model(best_model, "model")
 
     # Simpan confusion matrix plot
     cm = confusion_matrix(y_test, y_pred)
