@@ -53,9 +53,13 @@ with mlflow.start_run():
     mlflow.log_metric("recall", recall)
     mlflow.log_metric("f1_score", f1)
 
-    # Simpan model ke file
-    model_path = "model.pkl"
-    joblib.dump(best_model, model_path)
+    signature = infer_signature(X_test, y_pred)
+    mlflow.sklearn.log_model(
+        sk_model=best_model,
+        artifact_path="model",
+        input_example=X_test.iloc[:5],
+        signature=signature
+    )
 
     # Simpan confusion matrix plot
     cm = confusion_matrix(y_test, y_pred)
