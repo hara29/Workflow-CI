@@ -53,8 +53,9 @@ with mlflow.start_run():
     mlflow.log_metric("recall", recall)
     mlflow.log_metric("f1_score", f1)
 
-    # Simpan model 
-    mlflow.sklearn.log_model(best_model, "model")
+    # Simpan model ke file
+    model_path = "model.pkl"
+    joblib.dump(best_model, model_path)
 
     # Simpan confusion matrix plot
     cm = confusion_matrix(y_test, y_pred)
@@ -107,6 +108,7 @@ with mlflow.start_run():
         """)
 
     # Log semua file sebagai artefak
+    mlflow.log_artifact(model_path, artifact_path="model")
     mlflow.log_artifact(cm_plot_path)
     mlflow.log_artifact("metric_info.json")
     mlflow.log_artifact("estimator.html")
