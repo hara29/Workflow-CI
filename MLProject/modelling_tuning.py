@@ -21,7 +21,7 @@ y_train = pd.read_csv("bank_preprocessing/y_train.csv").values.ravel()
 X_test = pd.read_csv("bank_preprocessing/X_test.csv")
 y_test = pd.read_csv("bank_preprocessing/y_test.csv").values.ravel()
 
-with mlflow.start_run() as run:
+with mlflow.start_run(nested=True):
     # Parameter tuning
     param_grid = {
         'n_estimators': [100, 200],
