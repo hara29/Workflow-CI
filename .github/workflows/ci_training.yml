@@ -35,7 +35,7 @@ jobs:
           pip install pandas numpy matplotlib seaborn scikit-learn mlflow 
 
       - name: Set MLflow Tracking URI
-        run: echo "MLFLOW_TRACKING_URI=https://dagshub.com/<username>/<repo>.mlflow" >> $GITHUB_ENV
+        run: echo "MLFLOW_TRACKING_URI=https://dagshub.com/hara29/bank-attrition-modelling.mlflow" >> $GITHUB_ENV
 
       - name: Run MLflow Project
         shell: bash -l {0}
