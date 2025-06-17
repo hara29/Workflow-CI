@@ -50,16 +50,16 @@ jobs:
               f.write(f"RUN_ID={run_id}\n")
           EOF
 
-      - name: Download model artifact
-        run: |
-          mlflow artifacts download \
-            --run-id $RUN_ID \
-            --artifact-path model \
-            --dst-path ./model
+      - name: Upload model artifact to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-model
+          path: mlruns/0/${{ steps.get_run_id.outputs.run_id }}/artifacts/model/
 
-      - name: Build Docker Image
+      - name: Build Docker Image via MLflow
         run: |
-          mlflow models build-docker --model-uri ./model --name ${{ secrets.DOCKER_IMAGE_NAME }}
+          echo "Building Docker image from model run: $RUN_ID"
+          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" --name ${{ secrets.DOCKER_IMAGE_NAME }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
