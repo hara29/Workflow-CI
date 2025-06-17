@@ -41,11 +41,10 @@ jobs:
         with:
           name: model-artifact
           path: |
-            mlruns/0/${{ env.RUN_ID }}/artifacts/model/
-            metric_info.json
-            estimator.html
-            training_confusion_matrix.png
-        working-directory: MLProject
+            MLProject/mlruns/0/${{ env.RUN_ID }}/artifacts/model/
+            MLProject/metric_info.json
+            MLProject/estimator.html
+            MLProject/training_confusion_matrix.png
 
       - name: Build Docker Model
         run: |
