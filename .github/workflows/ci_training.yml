@@ -50,14 +50,12 @@ jobs:
               f.write(f"RUN_ID={run_id}\n")
           EOF
 
-      - name: Download model from MLflow run artifacts
+      - name: Download model artifact
         run: |
-          echo "Downloading model from run: $RUN_ID"
-          python <<EOF
-          import mlflow
-          client = mlflow.tracking.MlflowClient()
-          client.download_artifacts(run_id="${{ env.RUN_ID }}", path="model", dst_path="./")
-          EOF
+          mlflow artifacts download \
+            --run-id $RUN_ID \
+            --artifact-path model \
+            --dst-path ./model
 
       - name: Build Docker Image
         run: |
