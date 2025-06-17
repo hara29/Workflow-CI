@@ -35,6 +35,7 @@ jobs:
       - name: Run MLflow Project
         shell: bash -l {0}
         run: |
+          export MLFLOW_TRACKING_URI="file://$(pwd)/mlruns"
           mlflow run MLProject --experiment-name "RandomForest_ManualLogging" --env-manager=local
 
       - name: Get latest MLflow run_id
