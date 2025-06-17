@@ -56,7 +56,7 @@ with mlflow.start_run():
     signature = infer_signature(X_test, y_pred)
     mlflow.sklearn.log_model(
         sk_model=best_model,
-        artifact_path="model",
+        name="model",
         input_example=X_test.iloc[:5],
         signature=signature
     )
@@ -112,7 +112,6 @@ with mlflow.start_run():
         """)
 
     # Log semua file sebagai artefak
-    mlflow.log_artifact(model_path, artifact_path="model")
     mlflow.log_artifact(cm_plot_path)
     mlflow.log_artifact("metric_info.json")
     mlflow.log_artifact("estimator.html")
