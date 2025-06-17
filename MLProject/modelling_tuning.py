@@ -56,7 +56,7 @@ with mlflow.start_run():
     signature = infer_signature(X_test, y_pred)
     mlflow.sklearn.log_model(
         sk_model=best_model,
-        name="model",
+        artifact_path="best_model",
         input_example=X_test.iloc[:5],
         signature=signature
     )
