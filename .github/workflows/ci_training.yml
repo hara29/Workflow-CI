@@ -50,13 +50,20 @@ jobs:
           print(run.info.run_id)
                     ")" >> $GITHUB_OUTPUT
 
-      - name: Download model artifact from DagsHub
+      - name: Download model artifact via Python
         run: |
-          mlflow artifacts download \
-            -u "runs:/${{ steps.get-run.outputs.run_id }}/model" \
-            -d model_dir
+          python -c "
+          import mlflow
+          import os
+          mlflow.set_tracking_uri('https://dagshub.com/hara29/bank-attrition-modelling.mlflow')
+          client = mlflow.tracking.MlflowClient()
+          run_id = '${{ steps.get-run.outputs.run_id }}'
+          model_uri = f'runs:/{run_id}/model'
+          path = client.download_artifacts(run_id, 'model', dst_path='model_dir')
+          print(f'Model downloaded to {path}')
+              "
 
-      - name: Build Docker Image 
+      - name: Build Docker Image
         run: |
           mlflow models build-docker -m model_dir -n ${{ secrets.DOCKER_IMAGE_NAME }}
 
