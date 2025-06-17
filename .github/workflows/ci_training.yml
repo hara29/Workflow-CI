@@ -37,7 +37,7 @@ jobs:
         run: |
           mlflow run MLProject --experiment-name "RandomForest_ManualLogging" --env-manager=local
 
-            - name: Get latest run_id from DagsHub
+      - name: Get latest run_id from DagsHub
         id: get-run
         run: |
           echo "Fetching latest run ID..."
