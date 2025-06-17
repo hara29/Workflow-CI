@@ -23,7 +23,7 @@ y_train = pd.read_csv("bank_preprocessing/y_train.csv").values.ravel()
 X_test = pd.read_csv("bank_preprocessing/X_test.csv")
 y_test = pd.read_csv("bank_preprocessing/y_test.csv").values.ravel()
 
-with mlflow.start_run():
+with mlflow.start_run() as run:
     # Parameter grid
     param_grid = {
         'n_estimators': [100, 200],
@@ -53,15 +53,20 @@ with mlflow.start_run():
     mlflow.log_metric("recall", recall)
     mlflow.log_metric("f1_score", f1)
 
-    signature = infer_signature(X_test, y_pred)
-    mlflow.sklearn.log_model(
-        sk_model=best_model,
-        name="best_model",
-        input_example=X_test.iloc[:5],
-        signature=signature
-    )
+    # === Log model secara kompatibel dengan DagsHub ===
+    from mlflow.models import infer_signature
+    from mlflow.sklearn import save_model
 
-    # Simpan confusion matrix plot
+    # Simpan model secara lokal dulu
+    local_model_path = "model"
+    save_model(sk_model=best_model, path=local_model_path,
+               input_example=X_test.iloc[:5].astype("float64"),
+               signature=infer_signature(X_test.astype("float64"), y_pred))
+
+    # Lalu log manual sebagai artifact (tanpa registered model)
+    mlflow.log_artifacts(local_model_path, artifact_path="model")
+
+    # Simpan confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(6, 4))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
@@ -82,7 +87,7 @@ with mlflow.start_run():
     with open("metric_info.json", "w") as f:
         json.dump(metric_info, f, indent=2)
 
-    # Simpan estimator.html (dummy HTML deskripsi model)
+    # Simpan estimator.html
     with open("estimator.html", "w") as f:
         f.write(f"""
         <html>
@@ -111,11 +116,10 @@ with mlflow.start_run():
         </html>
         """)
 
-    # Log semua file sebagai artefak
+    # Log artifacts tambahan (di luar model)
     mlflow.log_artifact(cm_plot_path)
     mlflow.log_artifact("metric_info.json")
     mlflow.log_artifact("estimator.html")
 
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
-
