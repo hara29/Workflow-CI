@@ -37,35 +37,28 @@ jobs:
         run: |
           mlflow run MLProject --experiment-name "RandomForest_ManualLogging" --env-manager=local
 
-      - name: Get latest run_id from DagsHub
-        id: get-run
+      - name: Get latest MLflow run_id
         run: |
-          echo "Fetching latest run ID..."
-          echo "run_id=$(python -c "
+          echo "Getting latest run ID..."
+          python <<EOF
           import mlflow
-          mlflow.set_tracking_uri('https://dagshub.com/hara29/bank-attrition-modelling.mlflow')
           client = mlflow.tracking.MlflowClient()
-          exp = client.get_experiment_by_name('RandomForest_ManualLogging')
-          run = client.search_runs(experiment_ids=[exp.experiment_id], order_by=['start_time DESC'])[0]
-          print(run.info.run_id)
-                    ")" >> $GITHUB_OUTPUT
+          runs = client.search_runs(experiment_ids=["0"], order_by=["start_time DESC"]) 
+          run_id = runs[0].info.run_id
+          print(f"Latest run ID: {run_id}")
+          with open("${{ github.env }}", "a") as f:
+              f.write(f"RUN_ID={run_id}\n")
+          EOF
 
-      - name: Download model artifact via Python
+      - name: Download model artifacts from DagsHub
         run: |
-          python -c "
-          import mlflow
-          import os
-          mlflow.set_tracking_uri('https://dagshub.com/hara29/bank-attrition-modelling.mlflow')
-          client = mlflow.tracking.MlflowClient()
-          run_id = '${{ steps.get-run.outputs.run_id }}'
-          model_uri = f'runs:/{run_id}/model'
-          path = client.download_artifacts(run_id, 'model', dst_path='model_dir')
-          print(f'Model downloaded to {path}')
-              "
+          echo "Downloading model artifact for run: $RUN_ID"
+          mlflow artifacts download --run-id $RUN_ID --artifact-path model -d ./downloaded
+          mv ./downloaded/model ./best_model
 
-      - name: Build Docker Image
+      - name: Build Docker Model
         run: |
-          mlflow models build-docker -m model_dir -n ${{ secrets.DOCKER_IMAGE_NAME }}
+          mlflow models build-docker -m runs:/$MLFLOW_RUN_ID/model -n ${{ secrets.DOCKER_IMAGE_NAME }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2

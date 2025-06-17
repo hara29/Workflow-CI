@@ -10,6 +10,8 @@ from sklearn.metrics import classification_report, accuracy_score, precision_sco
 import matplotlib.pyplot as plt
 import seaborn as sns
 import tempfile
+from mlflow.models import infer_signature
+from mlflow.sklearn import save_model
 
 # === Konfigurasi DagsHub MLflow ===
 os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
@@ -53,17 +55,13 @@ with mlflow.start_run() as run:
     mlflow.log_metric("recall", recall)
     mlflow.log_metric("f1_score", f1)
 
-    # === Log model secara kompatibel dengan DagsHub ===
-    from mlflow.models import infer_signature
-    from mlflow.sklearn import save_model
-
-    # Simpan model secara lokal dulu
+    # Simpan model secara lokal 
     local_model_path = "model"
     save_model(sk_model=best_model, path=local_model_path,
                input_example=X_test.iloc[:5].astype("float64"),
                signature=infer_signature(X_test.astype("float64"), y_pred))
 
-    # Lalu log manual sebagai artifact (tanpa registered model)
+    # log manual sebagai artifact (tanpa registered model)
     mlflow.log_artifacts(local_model_path, artifact_path="model")
 
     # Simpan confusion matrix
