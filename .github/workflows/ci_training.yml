@@ -45,10 +45,11 @@ jobs:
             metric_info.json
             estimator.html
             training_confusion_matrix.png
+        working-directory: MLProject
 
       - name: Build Docker Model
         run: |
-          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" --name "${{ secrets.DOCKER_IMAGE_NAME }}"
+          mlflow models build-docker --model-uri "runs:/$RUN_ID/model" --name "cindy29/${{ secrets.DOCKER_IMAGE_NAME }}"
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
