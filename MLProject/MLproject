@@ -1,4 +1,4 @@
-name: mlflow-env
+name: bank_attrition_training
 
 conda_env: conda.yaml
 
