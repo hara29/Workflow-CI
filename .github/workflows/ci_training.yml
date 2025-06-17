@@ -50,15 +50,18 @@ jobs:
               f.write(f"RUN_ID={run_id}\n")
           EOF
 
-      - name: Download model artifacts from DagsHub
+      - name: Download model manually using MlflowClient
         run: |
-          echo "Downloading model artifact for run: $RUN_ID"
-          mlflow artifacts download --run-id $RUN_ID --artifact-path model -d ./downloaded
-          mv ./downloaded/model ./best_model
+          echo "Downloading model artifact for run: $RUN_ID using Python"
+          python <<EOF
+          import mlflow
+          client = mlflow.tracking.MlflowClient()
+          client.download_artifacts(run_id="${{ env.RUN_ID }}", path="model", dst_path="best_model")
+          EOF
 
-      - name: Build Docker Model
+      - name: Build Docker Image
         run: |
-          mlflow models build-docker -m runs:/$MLFLOW_RUN_ID/model -n ${{ secrets.DOCKER_IMAGE_NAME }}
+          mlflow models build-docker --model-uri ./best_model --name ${{ env.DOCKER_IMAGE_NAME }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
