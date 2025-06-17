@@ -33,7 +33,7 @@ jobs:
       - name: Run MLflow Project
         run: |
           export MLFLOW_TRACKING_URI="file://$(pwd)/mlruns"
-          mlflow run MLproject --env-manager=local
+          mlflow run MLProject --env-manager=local
 
       - name: Get latest MLflow run_id
         run: |
@@ -69,7 +69,7 @@ jobs:
       - name: Push Docker image
         run: |
           docker tag rf_model_ci ${{ secrets.DOCKER_HUB_USERNAME }}/rf_model_ci:latest
-          
+
       - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/rf_model_ci:latest
