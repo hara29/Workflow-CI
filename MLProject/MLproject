@@ -6,3 +6,5 @@ entry_points:
   main:
     parameters: {}
     command: "python modelling_tuning.py"
+
+conda_env: conda.yaml
