@@ -41,17 +41,17 @@ jobs:
         run: |
           echo "Getting latest run ID from DagsHub..."
           python <<EOF
-import mlflow
-client = mlflow.tracking.MlflowClient()
-exp = client.get_experiment_by_name("RandomForest_ManualLogging")
-if exp is None:
-    raise Exception("Experiment not found.")
-runs = client.search_runs(experiment_ids=[exp.experiment_id], order_by=["start_time DESC"])
-if not runs:
-    raise Exception("No runs found.")
-run_id = runs[0].info.run_id
-print(f"::set-output name=run_id::{run_id}")
-EOF
+          import mlflow
+          client = mlflow.tracking.MlflowClient()
+          exp = client.get_experiment_by_name("RandomForest_ManualLogging")
+          if exp is None:
+              raise Exception("Experiment not found.")
+          runs = client.search_runs(experiment_ids=[exp.experiment_id], order_by=["start_time DESC"])
+          if not runs:
+              raise Exception("No runs found.")
+          run_id = runs[0].info.run_id
+          print(f"::set-output name=run_id::{run_id}")
+          EOF
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
